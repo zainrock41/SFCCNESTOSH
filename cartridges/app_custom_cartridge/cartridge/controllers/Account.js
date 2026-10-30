@@ -29,7 +29,8 @@ server.prepend(
     csrfProtection.validateAjaxRequest,
     function (req, res, next) {
         var Resource = require('dw/web/Resource');
-        var dobValidationHelper = require('../scripts/helpers/dobValidationHelper');
+        // @ts-ignore
+        var registrationValidationHelper = require('../scripts/helpers/registrationValidationHelper');
         // eslint-disable-next-line dot-notation
         var registrationForm = server.forms['getForm']('profile');
 
@@ -44,7 +45,7 @@ server.prepend(
             if (registrationForm.base && registrationForm.base.customer && registrationForm.base.customer.dateofbirth) {
                 registrationForm.base.customer.dateofbirth.invalidateFormElement();
             }
-        } else if (!dobValidationHelper.isValidDob(dob.trim())) {
+        } else if (!registrationValidationHelper.isValidDob(dob.trim())) {
             registrationForm.customer.dateofbirth.valid = false;
             registrationForm.customer.dateofbirth.error = Resource.msg('error.message.invalid.dob', 'forms', null);
             registrationForm.valid = false;
@@ -61,7 +62,7 @@ server.prepend(
             if (registrationForm.base && registrationForm.base.customer && registrationForm.base.customer.phone) {
                 registrationForm.base.customer.phone.invalidateFormElement();
             }
-        } else if (!dobValidationHelper.isValidPhone(phone.trim())) {
+        } else if (!registrationValidationHelper.isValidPhone(phone.trim())) {
             registrationForm.customer.phone.valid = false;
             registrationForm.customer.phone.error = Resource.msg('error.message.invalid.phone', 'forms', null);
             registrationForm.valid = false;
@@ -94,16 +95,17 @@ server.prepend(
 server.append('SubmitRegistration', function (req, res, next) {
     this.on('route:BeforeComplete', function (innerReq, innerRes) { // eslint-disable-line no-shadow
         var Transaction = require('dw/system/Transaction');
-        var dobValidationHelper = require('../scripts/helpers/dobValidationHelper');
+        // @ts-ignore
+        var registrationValidationHelper = require('../scripts/helpers/registrationValidationHelper');
         var viewData = innerRes.getViewData();
 
         if (viewData && viewData.authenticatedCustomer) {
             var dobValue = viewData.customDob;
             var phoneValue = viewData.customPhone;
 
-            if (dobValue && phoneValue && dobValidationHelper.isValidDob(dobValue) && dobValidationHelper.isValidPhone(phoneValue)) {
+            if (dobValue && phoneValue && registrationValidationHelper.isValidDob(dobValue) && registrationValidationHelper.isValidPhone(phoneValue)) {
                 var profile = viewData.authenticatedCustomer.getProfile();
-                var dobDate = dobValidationHelper.parseDobToDate(dobValue);
+                var dobDate = registrationValidationHelper.parseDobToDate(dobValue);
 
                 Transaction.wrap(function () {
                     // Save Date of Birth as Date-type custom attribute

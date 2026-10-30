@@ -1,8 +1,14 @@
 'use strict';
 
 /**
+ * Helper module for validating and processing custom customer registration fields
+ * (Date of Birth and Phone Number).
+ */
+
+/**
  * Validates whether a given string is in DD-MM-YYYY format and represents a real calendar date.
- * Strictly rejects non-existent dates such as 31-02-2026, 29-02-2023, 31-04-2026, etc.
+ * Strictly rejects non-existent dates such as 31-02-2026, 29-02-2023, 31-04-2026, etc.,
+ * as well as future dates.
  *
  * @param {string} dobString - Date of birth string in DD-MM-YYYY format.
  * @returns {boolean} - True if valid calendar date, false otherwise.
@@ -36,6 +42,14 @@ function isValidDob(dobString) {
     var daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     if (day < 1 || day > daysInMonth[month - 1]) {
+        return false;
+    }
+
+    // Must not be a future date (DOB cannot be after today)
+    var inputDate = new Date(Date.UTC(year, month - 1, day));
+    var now = new Date();
+    var todayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    if (inputDate > todayUtc) {
         return false;
     }
 
